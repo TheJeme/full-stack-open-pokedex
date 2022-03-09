@@ -5,7 +5,7 @@ on:
     branches:
       - master
   pull_request:
-    branches: [master] 
+    branches: [master]
     types: [opened, synchronize]
 
 jobs:
@@ -30,3 +30,41 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+
+      - name: Deploy to Heroku
+        if: ${{ github.event_name == 'push' && ( !contains(join(github.event.commits.*.message),'#skip') ) }}
+        uses: AkhileshNS/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "full-stack-open-pokedex-jeme"
+          heroku_email: "eemelijoonatan@gmail.com"
+          healthcheck: "https://full-stack-open-pokedex-jeme.herokuapp.com/health"
+          checkstring: "ok"
+          rollbackonhealthcheckfailed: true
+
+      - name: Deployment Success
+          uses: rjstone/discord-webhook-notify@v1
+          if: success()
+          with:
+            severity: info
+            details: Deployment Succeeded.
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Deployment Fail
+          uses: rjstone/discord-webhook-notify@v1
+          if: failure()
+          with:
+            severity: error
+            details: Deployment Failed.
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message),'#skip')}}
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch

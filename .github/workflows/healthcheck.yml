@@ -1,14 +1,18 @@
 name: Health Check
 
 on:
-  schedule:
-    - cron: '0 22 * * *'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize]
 
 jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      - name: Check the deployed service URL
+      - name: Health Check
         uses: jtalk/url-health-check-action@v1.4
         with:
           url: https://full-stack-open-pokedex-jeme.herokuapp.com/health
