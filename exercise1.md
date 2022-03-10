@@ -1,4 +1,4 @@
-I will pick Python for the programming language on the application.
+I will pick Python for the programming language on the application, because I have used it before.
 
 For linting I would use Pylint. That is very common linting tool for python and I have used it before.
 
